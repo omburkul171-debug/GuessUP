@@ -1,0 +1,86 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {uid}
+// Fields:
+//   - uid: string (required)
+//   - displayName: string (required)
+//   - photoURL: string (optional)
+//   - points: number (required)
+//   - gamesPlayed: number (required)
+//   - gamesWon: number (required)
+//
+// Collection: games
+// Document ID: {gameId}
+// Fields:
+//   - player1: string (uid, required)
+//   - player2: string (uid, optional)
+//   - player1Name: string (required)
+//   - player2Name: string (optional)
+//   - player1Secret: number (optional)
+//   - player2Secret: number (optional)
+//   - status: string (required, enum: ['waiting', 'selecting', 'playing', 'finished'])
+//   - turn: string (uid, optional)
+//   - history: list (optional)
+//   - winner: string (uid, optional)
+//   - createdAt: timestamp (required)
+//   - range: number (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return true; // Bypassing auth check as requested
+    }
+
+    function isOwner(userId) {
+      return true; // Bypassing ownership check as requested
+    }
+
+    function isAdmin() {
+      return false;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'points', 'gamesPlayed', 'gamesWon']) &&
+             data.uid is string &&
+             data.displayName is string && data.displayName.size() > 0 && data.displayName.size() < 100 &&
+             data.points is number &&
+             data.gamesPlayed is number &&
+             data.gamesWon is number;
+    }
+
+    function isValidGame(data) {
+      return data.keys().hasAll(['player1', 'player1Name', 'status', 'createdAt', 'range']) &&
+             data.player1 is string &&
+             data.player1Name is string &&
+             data.status in ['waiting', 'selecting', 'playing', 'finished'] &&
+             data.range is number && data.range > 0 && data.range <= 1000;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /games/{gameId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

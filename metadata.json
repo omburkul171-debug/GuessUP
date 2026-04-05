@@ -1,0 +1,5 @@
+{
+  "name": "GuessUp",
+  "description": "A fun and addictive multiplayer number guessing game. Compete with friends or AI to guess the secret number first!",
+  "requestFramePermissions": []
+}
